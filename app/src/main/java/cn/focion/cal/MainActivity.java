@@ -16,7 +16,6 @@ public class MainActivity extends AppCompatActivity {
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            mCalModel.setMonth(2016, 12);
             mAdapter.notifyDataSetChanged();
         }
     };
@@ -25,8 +24,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mCalModel = new CalModel();
-        mCalModel.split(1, 1, 5, 15, 31).split(5, 1, 3).setYear(2017);
+        mCalModel = new CalModel(2017, 2018, 3, 5);
+        mCalModel.build();
+        
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler);
         mAdapter = new CalAdapter(this, mCalModel);
         GridLayoutManager layoutManager = new GridLayoutManager(this, 7);

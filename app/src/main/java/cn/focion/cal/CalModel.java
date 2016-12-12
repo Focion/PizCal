@@ -1,9 +1,7 @@
 package cn.focion.cal;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Locale;
 
 import android.util.SparseArray;
@@ -18,17 +16,27 @@ import android.util.SparseIntArray;
  * @since 2016.12.10
  */
 public class CalModel {
+    
     // 头
     public static final int TYPE_HEADER = 1;
     
     // item
     public static final int TYPE_ITEM = 0;
     
-    // 单选
-    public static final int TYPE_SINGLE = 10;
+    // 开始年份
+    private int startYear;
     
-    // 复选
-    public static final int TYPE_MULTIPLE = 11;
+    // 结束年份
+    private int endYear;
+    
+    // 开始月份
+    private int startMonth;
+    
+    // 结束月份
+    private int endMonth;
+    
+    // 剔除不可选择的日期
+    private SparseArray<SparseArray<ArrayList<Integer>>> splitDays;
     
     // 角标类型映射
     private SparseIntArray positionType;
@@ -42,101 +50,129 @@ public class CalModel {
     // 可选择的映射
     private SparseBooleanArray positionEnable;
     
-    // 剔除不可选择的日期
-    private SparseArray<List<Integer>> monthSplit;
-    
     // 总数
-    private int count;
+    private int count = 0;
     
-    public CalModel() {
+    // 点击
+    private int position = -1;
+    
+    public CalModel(int startYear, int endYear) {
+        this(startYear, endYear, 1, 12);
+    }
+    
+    public CalModel(int startYear, int endYear, int startMonth, int endMonth) {
         positionType = new SparseIntArray();
         positionValue = new SparseArray<>();
         positionCheck = new SparseBooleanArray();
         positionEnable = new SparseBooleanArray();
-        monthSplit = new SparseArray<>();
+        splitDays = new SparseArray<>();
+        this.startYear = startYear;
+        this.endYear = endYear;
+        this.startMonth = startMonth;
+        this.endMonth = endMonth;
     }
     
-    /**
-     * 显示整年
-     */
-    public CalModel setYear(int year) {
-        count = (isLeap(year) ? 366 : 365) + 12;
-        yearMonth(year, 1);
+    public CalModel setSplitMonth(int year, int... months) {
+        for (int month : months) {
+            int size = dayOfMonth(year, month);
+            int[] days = new int[size];
+            for (int day = 0; day < size; day++)
+                days[day] = day + 1;
+            setSplitDay(year, month, days);
+        }
         return this;
     }
     
     /**
-     * 显示整月
+     * 过滤某年某月的某些天
+     * 
+     * @param year
+     *            年
+     * @param month
+     *            月
+     * @param days
+     *            日
      */
-    public void setMonth(int year, int month) {
-        count += days(year, month);
-        yearMonth(year, month);
-    }
-    
-    /**
-     * 设置剔除月和日
-     */
-    public CalModel split(int month, Integer... day) {
-        List<Integer> days = Arrays.asList(day);
-        monthSplit.put(month, days);
+    public CalModel setSplitDay(int year, int month, int... days) {
+        // 防止输入的年份大于显示的年份
+        if (year >= startYear && year <= endYear) {
+            if (splitDays.size() == 0)
+                splitDays.put(year, new SparseArray<ArrayList<Integer>>());
+            SparseArray<ArrayList<Integer>> months = splitDays.get(year);
+            // 防止输入的月份大于显示的年份
+            if ((month >= startMonth && month <= 12)
+                || (month >= 1 && month <= endMonth)) {
+                if (months.size() == 0)
+                    months.put(month, new ArrayList<Integer>());
+                ArrayList<Integer> dayArr = months.get(month);
+                int dayLimit = dayOfMonth(year, month);
+                for (int day : days) {
+                    if (day <= dayLimit)
+                        dayArr.add(day);
+                }
+            }
+        }
         return this;
     }
     
     public void build() {
-        
-    }
-    
-    /**
-     * 处理数据
-     */
-    private void yearMonth(int year, int month) {
+        // 清除数据
         positionType.clear();
         positionValue.clear();
+        positionCheck.clear();
+        positionEnable.clear();
         int position = 0;
-        for (int i = month; i <= 12; i++) {
-            positionType.put(position, TYPE_HEADER);
-            positionValue.put(position,
-                              String.format(Locale.CHINA,
-                                            "%d 年 %d 月",
-                                            year,
-                                            i));
-            positionCheck.put(position, false);
-            int week = dayOfWeek(year, i) - 1;
-            position++;
-            for (int j = 1 - week; j <= days(year, i); j++) {
-                positionType.put(position, TYPE_ITEM);
-                positionCheck.put(position, false);
-                if (j < 1) {
-                    positionValue.put(position, "");
-                    positionEnable.put(position, true);
-                }
-                else {
-                    positionValue.put(position, String.valueOf(j));
-                    List<Integer> days = monthSplit.get(i);
-                    positionEnable.put(position,
-                                       days == null || !days.contains(j));
-                }
+        // 循环年份
+        for (int year = startYear; year <= endYear; year++) {
+            int fooStart = 1;
+            int fooEnd = 12;
+            if (year == startYear) {
+                // 第一年
+                fooStart = startMonth;
+                fooEnd = 12;
+            }
+            else if (year == endYear) {
+                // 最后一年
+                fooStart = 1;
+                fooEnd = endMonth;
+            }
+            for (int month = fooStart; month <= fooEnd; month++) {
+                int dayOfWeek = dayOfWeek(year, month) - 1;
+                int dayOfMonth = dayOfMonth(year, month);
+                count++;
+                count += dayOfMonth;
+                count += dayOfWeek;
+                // 组装数据
+                positionType.put(position, CalModel.TYPE_HEADER);
+                positionValue.put(position,
+                                  String.format(Locale.CHINA,
+                                                "%d 年 %d 月",
+                                                year,
+                                                month));
                 position++;
+                for (int day = 1 - dayOfWeek; day <= dayOfMonth; day++) {
+                    positionType.put(position, TYPE_ITEM);
+                    positionCheck.put(position, false);
+                    if (day < 1) {
+                        positionValue.put(position, "");
+                        positionEnable.put(position, false);
+                    }
+                    else {
+                        positionValue.put(position, String.valueOf(day));
+                        positionEnable.put(position, true);
+                        SparseArray<ArrayList<Integer>> monthSplits =
+                                                                    splitDays.get(year);
+                        if (monthSplits != null) {
+                            ArrayList<Integer> splits = monthSplits.get(month);
+                            positionEnable.put(position,
+                                               splits == null
+                                                         || !splits.contains(day));
+                        }
+                    }
+                    position++;
+                }
             }
         }
-    }
-    
-    private SparseArray<SparseArray<ArrayList<Integer>>> yearMonthDays;
-    
-    public void setYearMonth(int startYear,
-                             int startMonth,
-                             int endYear,
-                             int endMonth) {
-        
-    }
-    
-    public void setSplit(int year, int month, int... days) {
-        
-    }
-    
-
-    private void yearMonthDay() {
-        
     }
     
     /**
@@ -161,7 +197,7 @@ public class CalModel {
     /**
      * 月的天数
      */
-    private int days(int year, int month) {
+    private int dayOfMonth(int year, int month) {
         if (month == 2)
             return isLeap(year) ? 29 : 28;
         else if (month == 4 || month == 6 || month == 9 || month == 11)
@@ -195,7 +231,11 @@ public class CalModel {
      * 选中或者取消选中
      */
     public void setCheck(int position) {
-        positionCheck.put(position, !positionCheck.get(position));
+        if (this.position == position)
+            return;
+        positionCheck.put(this.position, false);
+        this.position = position;
+        positionCheck.put(position, true);
     }
     
     /**
