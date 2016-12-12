@@ -18,10 +18,10 @@ import android.util.SparseIntArray;
 public class CalModel {
     
     // 头
-    public static final int TYPE_HEADER = 1;
+    public static final int TYPE_YEAR = 1;
     
     // item
-    public static final int TYPE_ITEM = 0;
+    public static final int TYPE_DAY = 0;
     
     // 开始年份
     private int startYear;
@@ -44,8 +44,7 @@ public class CalModel {
     // 角标值映射
     private SparseArray<String> positionValue;
     
-    // 单选复选的映射
-    private SparseBooleanArray positionCheck;
+    private SparseArray<String> positionResult;
     
     // 可选择的映射
     private SparseBooleanArray positionEnable;
@@ -53,23 +52,29 @@ public class CalModel {
     // 总数
     private int count = 0;
     
-    // 点击
-    private int position = -1;
+    private CalView.OnCalSelectListener mListener;
     
-    public CalModel(int startYear, int endYear) {
-        this(startYear, endYear, 1, 12);
+    public CalModel() {
+        positionType = new SparseIntArray();
+        positionEnable = new SparseBooleanArray();
+        positionValue = new SparseArray<>();
+        positionResult = new SparseArray<>();
+        splitDays = new SparseArray<>();
     }
     
-    public CalModel(int startYear, int endYear, int startMonth, int endMonth) {
-        positionType = new SparseIntArray();
-        positionValue = new SparseArray<>();
-        positionCheck = new SparseBooleanArray();
-        positionEnable = new SparseBooleanArray();
-        splitDays = new SparseArray<>();
+    public CalModel setYear(int startYear, int endYear) {
+        return setYear(startYear, endYear, 1, 12);
+    }
+    
+    public CalModel setYear(int startYear,
+                            int endYear,
+                            int startMonth,
+                            int endMonth) {
         this.startYear = startYear;
         this.endYear = endYear;
         this.startMonth = startMonth;
         this.endMonth = endMonth;
+        return this;
     }
     
     public CalModel setSplitMonth(int year, int... months) {
@@ -94,6 +99,10 @@ public class CalModel {
      *            日
      */
     public CalModel setSplitDay(int year, int month, int... days) {
+        if (startYear <= 0 && endYear <= 0)
+            throw new RuntimeException("年数据格式错误");
+        if (startMonth <= 0 && endMonth <= 0)
+            throw new RuntimeException("月数据格式错误");
         // 防止输入的年份大于显示的年份
         if (year >= startYear && year <= endYear) {
             if (splitDays.size() == 0)
@@ -119,7 +128,6 @@ public class CalModel {
         // 清除数据
         positionType.clear();
         positionValue.clear();
-        positionCheck.clear();
         positionEnable.clear();
         int position = 0;
         // 循环年份
@@ -143,7 +151,7 @@ public class CalModel {
                 count += dayOfMonth;
                 count += dayOfWeek;
                 // 组装数据
-                positionType.put(position, CalModel.TYPE_HEADER);
+                positionType.put(position, CalModel.TYPE_YEAR);
                 positionValue.put(position,
                                   String.format(Locale.CHINA,
                                                 "%d 年 %d 月",
@@ -151,8 +159,7 @@ public class CalModel {
                                                 month));
                 position++;
                 for (int day = 1 - dayOfWeek; day <= dayOfMonth; day++) {
-                    positionType.put(position, TYPE_ITEM);
-                    positionCheck.put(position, false);
+                    positionType.put(position, TYPE_DAY);
                     if (day < 1) {
                         positionValue.put(position, "");
                         positionEnable.put(position, false);
@@ -168,6 +175,12 @@ public class CalModel {
                                                splits == null
                                                          || !splits.contains(day));
                         }
+                        positionResult.put(position,
+                                           String.format(Locale.CHINA,
+                                                         "%d-%d-%d",
+                                                         year,
+                                                         month,
+                                                         day));
                     }
                     position++;
                 }
@@ -206,49 +219,39 @@ public class CalModel {
             return 31;
     }
     
+    void onCalSelect(int position) {
+        mListener.onCalSelect(positionResult.get(position));
+    }
+    
+    void setOnCalSelectListener(CalView.OnCalSelectListener calSelectListener) {
+        mListener = calSelectListener;
+    }
+    
     /**
      * 获取显示数量
      */
-    public int getCount() {
+    int getCount() {
         return count;
     }
     
     /**
      * 获取类型
      */
-    public int getType(int position) {
+    int getType(int position) {
         return positionType.get(position);
     }
     
     /**
      * 获取值
      */
-    public String getValue(int position) {
+    String getValue(int position) {
         return positionValue.get(position);
-    }
-    
-    /**
-     * 选中或者取消选中
-     */
-    public void setCheck(int position) {
-        if (this.position == position)
-            return;
-        positionCheck.put(this.position, false);
-        this.position = position;
-        positionCheck.put(position, true);
-    }
-    
-    /**
-     * 获取选中
-     */
-    public boolean getCheck(int position) {
-        return positionCheck.get(position);
     }
     
     /**
      * 获取不能选中的值
      */
-    public boolean getEnable(int position) {
+    boolean getEnable(int position) {
         return positionEnable.get(position);
     }
 }

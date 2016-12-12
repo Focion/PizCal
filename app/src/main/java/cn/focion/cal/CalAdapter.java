@@ -1,12 +1,11 @@
 package cn.focion.cal;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TableRow;
 import android.widget.TextView;
-import android.widget.Toast;
 
 /**
  * 列表适配器
@@ -17,24 +16,10 @@ import android.widget.Toast;
  */
 public class CalAdapter extends RecyclerView.Adapter<CalHolder> {
     
-    /**
-     * 上下文
-     */
-    protected Context mContext;
-    
-    /**
-     * 是否加载更多
-     */
-    protected boolean isLoad = false;
+    private Context mContext;
     
     private CalModel mCalModel;
     
-    /**
-     * 父类构造
-     *
-     * @param context
-     *            上下文
-     */
     public CalAdapter(Context context, CalModel calModel) {
         mContext = context;
         this.mCalModel = calModel;
@@ -43,156 +28,102 @@ public class CalAdapter extends RecyclerView.Adapter<CalHolder> {
     @Override
     public CalHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         switch (viewType) {
-            case CalModel.TYPE_HEADER:
+            case CalModel.TYPE_YEAR:
                 return newHolder(View.inflate(parent.getContext(),
                                               R.layout.layout_year,
                                               null),
-                                 CalModel.TYPE_HEADER);
-            case CalModel.TYPE_ITEM:
+                                 CalModel.TYPE_YEAR);
+            case CalModel.TYPE_DAY:
                 return newHolder(View.inflate(parent.getContext(),
                                               R.layout.layout_day,
                                               null),
-                                 CalModel.TYPE_ITEM);
+                                 CalModel.TYPE_DAY);
         }
         return null;
     }
     
     @Override
     public void onBindViewHolder(CalHolder holder, int position) {
-        // 判断Item
-        if (position < getItemCount() - 1
-            || (!isLoad && position == getItemCount() - 1))
-            onBindHolder(holder, position);
-    }
-    
-    /**
-     * 获取Item数量
-     *
-     * @return 返回数量包括底部加载
-     */
-    @Override
-    public int getItemCount() {
-        if (isLoad)
-            return getCount() + 1;
-        else
-            return getCount();
-    }
-    
-    /**
-     * 真实的数据数量
-     *
-     * @return 数量个数
-     */
-    protected int getCount() {
-        return mCalModel.getCount();
-    }
-    
-    /**
-     * 绑定Holder数据
-     *
-     * @param holder
-     *            容器
-     * @param position
-     *            角标
-     */
-    protected void onBindHolder(CalHolder holder, int position) {
         switch (mCalModel.getType(position)) {
-            case CalModel.TYPE_HEADER:
-                holder.holder(R.id.cal_year, TextView.class)
-                      .setText(mCalModel.getValue(position));
+            case CalModel.TYPE_YEAR:
+                // 年
+                TextView calYear = holder.holder(R.id.cal_year, TextView.class);
+                calYear.setBackgroundColor(CalParams.CAL_YEAR_BG);
+                calYear.setTextSize(CalParams.CAL_YEAR_TEXTSIZE);
+                calYear.setTextColor(CalParams.CAL_YEAR_TEXTCOLOR);
+                if (CalParams.CAL_YEAR_BOLD)
+                    calYear.setTextAppearance(mContext, R.style.boldStyle);
+                calYear.setText(mCalModel.getValue(position));
+                // 周
+                TableRow calWeek = holder.holder(R.id.cal_week, TableRow.class);
+                calWeek.setBackgroundColor(CalParams.CAL_WEEK_BG);
+                TextView sunday = holder.holder(R.id.sunday, TextView.class);
+                TextView monday = holder.holder(R.id.monday, TextView.class);
+                TextView tuesday = holder.holder(R.id.tuesday, TextView.class);
+                TextView wednesday = holder.holder(R.id.wednesday,
+                                                   TextView.class);
+                TextView thursday =
+                                  holder.holder(R.id.thursday, TextView.class);
+                TextView friday = holder.holder(R.id.friday, TextView.class);
+                TextView saturday =
+                                  holder.holder(R.id.saturday, TextView.class);
+                sunday.setTextSize(CalParams.CAL_WEEK_TEXTSIZE);
+                sunday.setTextColor(CalParams.CAL_WEEK_TEXTCOLOR);
+                monday.setTextSize(CalParams.CAL_WEEK_TEXTSIZE);
+                monday.setTextColor(CalParams.CAL_WEEK_TEXTCOLOR);
+                tuesday.setTextSize(CalParams.CAL_WEEK_TEXTSIZE);
+                tuesday.setTextColor(CalParams.CAL_WEEK_TEXTCOLOR);
+                wednesday.setTextSize(CalParams.CAL_WEEK_TEXTSIZE);
+                wednesday.setTextColor(CalParams.CAL_WEEK_TEXTCOLOR);
+                thursday.setTextSize(CalParams.CAL_WEEK_TEXTSIZE);
+                thursday.setTextColor(CalParams.CAL_WEEK_TEXTCOLOR);
+                friday.setTextSize(CalParams.CAL_WEEK_TEXTSIZE);
+                friday.setTextColor(CalParams.CAL_WEEK_TEXTCOLOR);
+                saturday.setTextSize(CalParams.CAL_WEEK_TEXTSIZE);
+                saturday.setTextColor(CalParams.CAL_WEEK_TEXTCOLOR);
+                if (CalParams.CAL_WEEK_BOLD) {
+                    sunday.setTextAppearance(mContext, R.style.boldStyle);
+                    monday.setTextAppearance(mContext, R.style.boldStyle);
+                    tuesday.setTextAppearance(mContext, R.style.boldStyle);
+                    wednesday.setTextAppearance(mContext, R.style.boldStyle);
+                    thursday.setTextAppearance(mContext, R.style.boldStyle);
+                    friday.setTextAppearance(mContext, R.style.boldStyle);
+                    saturday.setTextAppearance(mContext, R.style.boldStyle);
+                }
                 break;
             default:
                 TextView calDay = holder.holder(R.id.cal_day, TextView.class);
                 calDay.setText(mCalModel.getValue(position));
-                if (mCalModel.getEnable(position)) {
-                    calDay.setClickable(true);
-                    calDay.setBackgroundResource(R.drawable.sel_bg_to_press);
-                }
-                else {
-                    calDay.setClickable(false);
-                    calDay.setBackgroundResource(R.color.colorPrimary);
-                }
-                if (mCalModel.getCheck(position)) {
-                    calDay.setTextColor(Color.parseColor("#FFFFFF"));
-                    calDay.setBackgroundResource(R.color.colorAccent);
-                }
-                else {
-                    calDay.setTextColor(Color.parseColor("#FF4081"));
-                    calDay.setBackgroundResource(R.color.white_clr);
-                }
+                calDay.setTextSize(CalParams.CAL_DAY_TEXTSIZE);
+                calDay.setTextColor(CalParams.CAL_DAY_TEXTCOLOR);
+                calDay.setClickable(mCalModel.getEnable(position));
+                calDay.setBackgroundResource(CalParams.CAL_DAY_BG);
                 break;
         }
     }
     
-    /**
-     * 返回Item属性
-     *
-     * @param position
-     *            角标
-     * @return 属性
-     */
+    @Override
+    public int getItemCount() {
+        return mCalModel.getCount();
+    }
+    
     @Override
     public int getItemViewType(int position) {
-        if (isLoad && position + 1 == getItemCount())
-            return -1;
-        else
-            return mCalModel.getType(position);
+        return mCalModel.getType(position);
     }
     
-    /**
-     * 返回当前加载状态
-     *
-     * @return true 加载 false 不加载
-     */
-    public boolean isLoad() {
-        return isLoad;
-    }
-    
-    /**
-     * 停止加载更多
-     */
-    public void loadFinish() {
-        this.isLoad = false;
-        notifyItemRemoved(getItemCount() + 1);
-    }
-    
-    /**
-     * 设置是否加载更多
-     *
-     * @param isLoad
-     *            是否加载更多
-     */
-    public void setLoad(boolean isLoad) {
-        this.isLoad = isLoad;
-    }
-    
-    /**
-     * 获取ViewHolder
-     *
-     * @param itemView
-     *            布局View
-     * @param itemViewType
-     *            类型
-     * @return Holder
-     */
     private CalHolder newHolder(View itemView, int itemViewType) {
         final CalHolder holder = new CalHolder(itemView);
         switch (itemViewType) {
-            case CalModel.TYPE_HEADER:
+            case CalModel.TYPE_YEAR:
                 holder.holder(R.id.cal_year);
                 break;
-            case CalModel.TYPE_ITEM:
+            case CalModel.TYPE_DAY:
                 holder.holder(R.id.cal_day)
                       .setOnClickListener(new View.OnClickListener() {
                           @Override
                           public void onClick(View view) {
-                              Toast.makeText(mContext,
-                                             mCalModel.getValue(holder.getAdapterPosition()),
-                                             Toast.LENGTH_SHORT)
-                                   .show();
-                              int position = holder.getAdapterPosition();
-                              mCalModel.setCheck(position);
-                              notifyDataSetChanged();
+                              mCalModel.onCalSelect(holder.getAdapterPosition());
                           }
                       });
                 break;
