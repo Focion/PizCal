@@ -1,12 +1,12 @@
 package cn.focion.cal;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
-import java.util.Locale;
+import android.widget.Toast;
 
 /**
  * 列表适配器
@@ -15,7 +15,7 @@ import java.util.Locale;
  * @since 2015.03.28.
  * @version 1.0.1
  */
-public class CalAdapter extends RecyclerView.Adapter<RecyclerHolder> {
+public class CalAdapter extends RecyclerView.Adapter<CalHolder> {
     
     /**
      * 上下文
@@ -27,13 +27,7 @@ public class CalAdapter extends RecyclerView.Adapter<RecyclerHolder> {
      */
     protected boolean isLoad = false;
     
-    private final int TYPE_HEADER = 1;
-    
-    private final int TYPE_ITEM = 0;
-    
-    private final int TYPE_FOOTER = -1;
-    
-    private CalUtil calUtil;
+    private CalModel mCalModel;
     
     /**
      * 父类构造
@@ -41,37 +35,30 @@ public class CalAdapter extends RecyclerView.Adapter<RecyclerHolder> {
      * @param context
      *            上下文
      */
-    public CalAdapter(Context context, CalUtil calUtil) {
+    public CalAdapter(Context context, CalModel calModel) {
         mContext = context;
-        this.calUtil = calUtil;
+        this.mCalModel = calModel;
     }
     
     @Override
-    public RecyclerHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public CalHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         switch (viewType) {
-            case TYPE_HEADER:
+            case CalModel.TYPE_HEADER:
                 return newHolder(View.inflate(parent.getContext(),
                                               R.layout.layout_year,
                                               null),
-                                 TYPE_HEADER);
-            case TYPE_ITEM:
+                                 CalModel.TYPE_HEADER);
+            case CalModel.TYPE_ITEM:
                 return newHolder(View.inflate(parent.getContext(),
                                               R.layout.layout_day,
                                               null),
-                                 TYPE_ITEM);
-            
-            case TYPE_FOOTER:
-                // 设置颜色
-                return newHolder(View.inflate(parent.getContext(),
-                                              R.layout.layout_day,
-                                              null),
-                                 TYPE_FOOTER);
+                                 CalModel.TYPE_ITEM);
         }
         return null;
     }
     
     @Override
-    public void onBindViewHolder(RecyclerHolder holder, int position) {
+    public void onBindViewHolder(CalHolder holder, int position) {
         // 判断Item
         if (position < getItemCount() - 1
             || (!isLoad && position == getItemCount() - 1))
@@ -97,7 +84,7 @@ public class CalAdapter extends RecyclerView.Adapter<RecyclerHolder> {
      * @return 数量个数
      */
     protected int getCount() {
-        return calUtil.getCount();
+        return mCalModel.getCount();
     }
     
     /**
@@ -108,19 +95,31 @@ public class CalAdapter extends RecyclerView.Adapter<RecyclerHolder> {
      * @param position
      *            角标
      */
-    protected void onBindHolder(RecyclerHolder holder, int position) {
-        switch (calUtil.getType(position)) {
-            case TYPE_HEADER:
+    protected void onBindHolder(CalHolder holder, int position) {
+        switch (mCalModel.getType(position)) {
+            case CalModel.TYPE_HEADER:
                 holder.holder(R.id.cal_year, TextView.class)
-                      .setText(String.format(Locale.CHINA,
-                                             "%s月",
-                                             calUtil.getValue(position)));
-                break;
-            case TYPE_FOOTER:
+                      .setText(mCalModel.getValue(position));
                 break;
             default:
-                holder.holder(R.id.cal_day, TextView.class)
-                      .setText(calUtil.getValue(position));
+                TextView calDay = holder.holder(R.id.cal_day, TextView.class);
+                calDay.setText(mCalModel.getValue(position));
+                if (mCalModel.getEnable(position)) {
+                    calDay.setClickable(true);
+                    calDay.setBackgroundResource(R.drawable.sel_bg_to_press);
+                }
+                else {
+                    calDay.setClickable(false);
+                    calDay.setBackgroundResource(R.color.colorPrimary);
+                }
+                if (mCalModel.getCheck(position)) {
+                    calDay.setTextColor(Color.parseColor("#FFFFFF"));
+                    calDay.setBackgroundResource(R.color.colorAccent);
+                }
+                else {
+                    calDay.setTextColor(Color.parseColor("#FF4081"));
+                    calDay.setBackgroundResource(R.color.white_clr);
+                }
                 break;
         }
     }
@@ -135,9 +134,9 @@ public class CalAdapter extends RecyclerView.Adapter<RecyclerHolder> {
     @Override
     public int getItemViewType(int position) {
         if (isLoad && position + 1 == getItemCount())
-            return TYPE_FOOTER;
+            return -1;
         else
-            return calUtil.getType(position);
+            return mCalModel.getType(position);
     }
     
     /**
@@ -176,16 +175,26 @@ public class CalAdapter extends RecyclerView.Adapter<RecyclerHolder> {
      *            类型
      * @return Holder
      */
-    public RecyclerHolder newHolder(View itemView, int itemViewType) {
-        RecyclerHolder holder = new RecyclerHolder(itemView);
+    private CalHolder newHolder(View itemView, int itemViewType) {
+        final CalHolder holder = new CalHolder(itemView);
         switch (itemViewType) {
-            case TYPE_HEADER:
+            case CalModel.TYPE_HEADER:
                 holder.holder(R.id.cal_year);
                 break;
-            case TYPE_ITEM:
-                holder.holder(R.id.cal_day);
-                break;
-            case TYPE_FOOTER:
+            case CalModel.TYPE_ITEM:
+                holder.holder(R.id.cal_day)
+                      .setOnClickListener(new View.OnClickListener() {
+                          @Override
+                          public void onClick(View view) {
+                              Toast.makeText(mContext,
+                                             mCalModel.getValue(holder.getAdapterPosition()),
+                                             Toast.LENGTH_SHORT)
+                                   .show();
+                              int position = holder.getAdapterPosition();
+                              mCalModel.setCheck(position);
+                              notifyDataSetChanged();
+                          }
+                      });
                 break;
         }
         return holder;

@@ -8,7 +8,9 @@
         android:id="@+id/cal_day"
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:text="1"
-        android:gravity="center"/>
+        android:gravity="center"
+        android:textColor="@color/sel_bg_to_press"
+        android:background="@drawable/sel_bg_to_press"
+        android:text="1" />
 
 </LinearLayout>

@@ -11,7 +11,7 @@ import android.view.View;
  */
 
 @SuppressWarnings("ALL")
-public class RecyclerHolder extends RecyclerView.ViewHolder {
+public class CalHolder extends RecyclerView.ViewHolder {
     
     /**
      * 构造参数
@@ -19,7 +19,7 @@ public class RecyclerHolder extends RecyclerView.ViewHolder {
      * @param itemView
      *            布局View
      */
-    public RecyclerHolder(View item) {
+    public CalHolder(View item) {
         super(item);
     }
     
