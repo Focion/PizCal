@@ -4,6 +4,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import cn.focion.cal.CalModel;
+
 /**
  * Example local unit test, which will execute on the development machine
  * (host).
