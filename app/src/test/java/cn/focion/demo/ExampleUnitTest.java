@@ -1,10 +1,8 @@
-package cn.focion.cal;
+package cn.focion.demo;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.util.Calendar;
 
 /**
  * Example local unit test, which will execute on the development machine

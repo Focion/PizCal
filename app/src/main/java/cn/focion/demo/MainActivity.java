@@ -1,8 +1,11 @@
-package cn.focion.cal;
+package cn.focion.demo;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
+
+import cn.focion.cal.CalModel;
+import cn.focion.cal.CalView;
 
 public class MainActivity extends AppCompatActivity {
     
