@@ -2,6 +2,9 @@
 
 Cal是一个日历控件，RecyclerView实现
 
+#### 效果图
+![cal](https://raw.githubusercontent.com/Focion/PizRes/master/images/img_cal_view.png)
+
 #### 版本
 
   - 0.0.1
