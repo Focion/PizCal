@@ -2,14 +2,14 @@
 
 Cal是一个日历控件，RecyclerView实现
 
-#### 效果图
+#### Image
 ![cal](https://raw.githubusercontent.com/Focion/PizRes/master/images/img_cal_view.png)
 
-#### 版本
+#### Version
 
   - 1.0
 
-#### 使用介绍
+#### How to use
 
 ###### xml
 ```xml
@@ -44,7 +44,7 @@ Cal是一个日历控件，RecyclerView实现
       calView.notifyDataSetChanged();
 ```
 
-#### attr
+#### attribute
 ```xml
       // 年份的背景，字体大小，字体颜色，加粗
       <attr name="cal_yearBg" format="reference" />
