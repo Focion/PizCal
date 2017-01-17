@@ -7,19 +7,19 @@ Cal是一个日历控件，RecyclerView实现
 
 #### Dependency
 ```gradle
-    repositories {
-        maven { url 'https://jitpack.io' }
-    }
-    
-    dependencies {
-        compile 'com.github.Focion:PizCal:1.0.0'
-    }
+      repositories {
+          maven { url 'https://jitpack.io' }
+      }
+
+      dependencies {
+          compile 'com.github.Focion:PizCal:1.0.0'
+      }
 ```
 
 #### Version
 
   - 1.0.0
-  
+
 #### How to use
 
 ###### xml
@@ -55,7 +55,7 @@ Cal是一个日历控件，RecyclerView实现
       calView.notifyDataSetChanged();
 ```
 
-#### attribute
+#### Attribute
 ```xml
       // 年份的背景，字体大小，字体颜色，加粗
       <attr name="cal_yearBg" format="reference" />
