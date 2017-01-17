@@ -44,7 +44,7 @@ Cal是一个日历控件，RecyclerView实现
       calView.notifyDataSetChanged();
 ```
 
-#### 属性介绍
+#### attr
 ```xml
       // 年份的背景，字体大小，字体颜色，加粗
       <attr name="cal_yearBg" format="reference" />
