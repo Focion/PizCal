@@ -5,10 +5,21 @@ Cal是一个日历控件，RecyclerView实现
 #### Image
 ![cal](https://raw.githubusercontent.com/Focion/PizRes/master/images/img_cal_view.png)
 
+#### Dependency
+```gradle
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
+    
+    dependencies {
+        compile 'com.github.Focion:PizCal:1.0.0'
+    }
+```
+
 #### Version
 
-  - 1.0
-
+  - 1.0.0
+  
 #### How to use
 
 ###### xml
